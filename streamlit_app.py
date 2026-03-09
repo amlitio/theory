@@ -13,16 +13,15 @@ bypassing traditional numerical cutoffs.
 """)
 
 # --- 2. Interactive UI Controls (Main Page) ---
-# Moving controls here fixes the mobile overlay issue
 with st.expander("⚙️ Configure Loop Parameters", expanded=True):
     st.markdown("Adjust the parameters below to instantly recalculate the physics.")
     col_a, col_b = st.columns(2)
     with col_a:
-        a_param = st.slider("Asymmetry Parameter (a)", min_value=0.0, max_value=1.0, value=0.25, step=0.01)
+        a_param = st.slider("Asymmetry Parameter (a)", min_value=0.0, max_value=1.0, value=0.50, step=0.01)
         log_N_max = st.slider("Max Harmonic Mode (log10 N)", min_value=2, max_value=6, value=4)
     with col_b:
-        c0_base = st.number_input("Cusp Amplitude (c_0)", value=0.70, step=0.1)
-        c1_base = st.number_input("Kink Amplitude (c_1)", value=0.90, step=0.1)
+        c0_base = st.number_input("Cusp Amplitude (c_0)", value=1.00, step=0.1)
+        c1_base = st.number_input("Kink Amplitude (c_1)", value=0.80, step=0.1)
 
 # --- 3. Mathematical Formula Display ---
 st.subheader("The Analytical Solution")
@@ -51,12 +50,18 @@ fig, ax = plt.subplots(figsize=(10, 6))
 ax.loglog(N_array, P_tot, 'k-', linewidth=3, label='Total Analytical Solution P(N)')
 ax.loglog(N_array, P_c, 'r--', linewidth=2, label='Cusp Emission (\u221D N^{-4/3})')
 ax.loglog(N_array, P_k, 'b--', linewidth=2, label='Kink Contribution (\u221D N^{-2})')
-ax.loglog(N_array, P_i, 'g--', linewidth=2, label='Cusp-Kink Interaction (\u221D N^{-8/3})')
+
+# Made the interaction line thicker so it's easier to see changes
+ax.loglog(N_array, P_i, 'g--', linewidth=3, label='Cusp-Kink Interaction (\u221D N^{-8/3})')
 
 ax.set_xlabel('Harmonic Mode (N)', fontsize=12)
 ax.set_ylabel('Power Spectrum P(N)', fontsize=12)
 ax.grid(True, which="both", ls="--", alpha=0.5)
 ax.legend(fontsize=11)
+
+# --- THE FIX: Lock the axes so the lines physically move ---
+ax.set_ylim(1e-15, 1e-1)
+ax.set_xlim(10, 10**log_N_max)
 
 # Render the plot in the web app
 st.pyplot(fig)
