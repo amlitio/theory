@@ -9,15 +9,20 @@ st.title("Exact Asymptotic GW Power Spectrum")
 st.markdown("""
 This interactive application evaluates the exact analytical solutions for the 
 power spectrum of gravitational radiation emitted by cosmic strings, 
-bypicking up where traditional numerical cutoffs fail.
+bypassing traditional numerical cutoffs.
 """)
 
-# --- 2. Interactive Sidebar (UI Controls) ---
-st.sidebar.header("Configure Loop Parameters")
-a_param = st.sidebar.slider("Asymmetry Parameter (a)", min_value=0.0, max_value=1.0, value=0.5, step=0.01)
-c0_base = st.sidebar.number_input("Cusp Amplitude (c_0)", value=1.0, step=0.1)
-c1_base = st.sidebar.number_input("Kink Amplitude (c_1)", value=0.8, step=0.1)
-log_N_max = st.sidebar.slider("Max Harmonic Mode (log10 N)", min_value=2, max_value=6, value=4)
+# --- 2. Interactive UI Controls (Main Page) ---
+# Moving controls here fixes the mobile overlay issue
+with st.expander("⚙️ Configure Loop Parameters", expanded=True):
+    st.markdown("Adjust the parameters below to instantly recalculate the physics.")
+    col_a, col_b = st.columns(2)
+    with col_a:
+        a_param = st.slider("Asymmetry Parameter (a)", min_value=0.0, max_value=1.0, value=0.25, step=0.01)
+        log_N_max = st.slider("Max Harmonic Mode (log10 N)", min_value=2, max_value=6, value=4)
+    with col_b:
+        c0_base = st.number_input("Cusp Amplitude (c_0)", value=0.70, step=0.1)
+        c1_base = st.number_input("Kink Amplitude (c_1)", value=0.90, step=0.1)
 
 # --- 3. Mathematical Formula Display ---
 st.subheader("The Analytical Solution")
@@ -43,22 +48,23 @@ P_tot, P_c, P_k, P_i = compute_power_spectrum(N_array, a_param, c0_base, c1_base
 st.subheader("Interactive Spectral Plot")
 
 fig, ax = plt.subplots(figsize=(10, 6))
-ax.loglog(N_array, P_tot, 'k-', linewidth=3, label='Total Analytical Solution $P(N)$')
-ax.loglog(N_array, P_c, 'r--', linewidth=2, label=r'Cusp Emission ($\propto N^{-4/3}$)')
-ax.loglog(N_array, P_k, 'b--', linewidth=2, label=r'Kink Contribution ($\propto N^{-2}$)')
-ax.loglog(N_array, P_i, 'g--', linewidth=2, label=r'Cusp-Kink Interaction ($\propto N^{-8/3}$)')
+ax.loglog(N_array, P_tot, 'k-', linewidth=3, label='Total Analytical Solution P(N)')
+ax.loglog(N_array, P_c, 'r--', linewidth=2, label='Cusp Emission (\u221D N^{-4/3})')
+ax.loglog(N_array, P_k, 'b--', linewidth=2, label='Kink Contribution (\u221D N^{-2})')
+ax.loglog(N_array, P_i, 'g--', linewidth=2, label='Cusp-Kink Interaction (\u221D N^{-8/3})')
 
-ax.set_xlabel('Harmonic Mode ($N$)', fontsize=12)
-ax.set_ylabel('Power Spectrum $P(N)$', fontsize=12)
+ax.set_xlabel('Harmonic Mode (N)', fontsize=12)
+ax.set_ylabel('Power Spectrum P(N)', fontsize=12)
 ax.grid(True, which="both", ls="--", alpha=0.5)
 ax.legend(fontsize=11)
 
+# Render the plot in the web app
 st.pyplot(fig)
 
 # --- 6. Live Numerical Evaluation ---
 st.divider()
 st.subheader("Live Numerical Evaluation")
-st.markdown("See the exact mathematical output recalculate in real-time as you adjust the sidebar parameters.")
+st.markdown("See the exact mathematical output recalculate in real-time as you adjust the parameters above.")
 
 eval_N = st.number_input("Enter a specific Harmonic Mode (N) to calculate:", min_value=1.0, value=1000.0, step=100.0)
 
@@ -75,7 +81,7 @@ st.latex(rf"""
 P({eval_N}, {a_param}) \simeq {val_P_cusp:.4e} + {val_P_kink:.4e} + {val_P_interact:.4e} = \mathbf{{{val_P_tot:.4e}}}
 """)
 
-# Display metric cards
+# Display metric cards for clean dashboard UI
 col1, col2, col3, col4 = st.columns(4)
 col1.metric(label="Total Power P(N)", value=f"{val_P_tot:.4e}")
 col2.metric(label="Cusp Power", value=f"{val_P_cusp:.4e}")
